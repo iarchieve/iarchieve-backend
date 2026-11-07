@@ -1,0 +1,24 @@
+{
+  "countryId": "KR",
+  "cityId": "incheon",
+  "sources": [
+    {
+      "id": "incheon-city-press",
+      "publisher": "인천광역시",
+      "type": "press-release",
+      "url": "https://www.incheon.go.kr/IC010205"
+    },
+    {
+      "id": "incheon-council-minutes",
+      "publisher": "인천광역시의회",
+      "type": "council-minutes",
+      "url": "https://record.icouncil.go.kr/assem/search/detail.do"
+    },
+    {
+      "id": "incheon-data-portal",
+      "publisher": "인천광역시",
+      "type": "open-data-catalog",
+      "url": "https://data.incheon.go.kr/"
+    }
+  ]
+}
