@@ -1,0 +1,9 @@
+{
+  "name": "iarchieve-backend",
+  "main": "src/http/worker.mjs",
+  "compatibility_date": "2026-11-08",
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  }
+}
