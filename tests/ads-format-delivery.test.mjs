@@ -55,7 +55,7 @@ function createEnv(format, availableFormats = ["display", "video", "native"],
 
   return {
     env: {
-      ADS_PUBLISHER_TOKEN: secret,
+      ADS_PUBLISHER_TOKEN: secret, ADS_ALLOW_LEGACY_PUBLISHER_TOKEN: "true",
       ADS_DB: db
     },
     calls

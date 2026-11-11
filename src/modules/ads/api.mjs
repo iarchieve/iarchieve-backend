@@ -1,3 +1,4 @@
+import { authenticatePublisher } from "./publisher-auth.mjs";
 const respond = (data, status = 200) =>
   Response.json(data, {
     status,
@@ -7,7 +8,7 @@ const respond = (data, status = 200) =>
 const identities = [
   { key: "ADS_ADMIN_TOKEN", role: "admin", id: "dev-admin" },
   { key: "ADS_ADVERTISER_TOKEN", role: "advertiser", id: "adv-test-001" },
-  { key: "ADS_PUBLISHER_TOKEN", role: "publisher", id: "pub-test-001" }
+  { key: "ADS_PUBLISHER_TOKEN", role: "publisher", id: "pub-test-001", legacy: true }
 ];
 
 async function authenticate(request, env) {
@@ -27,10 +28,16 @@ async function authenticate(request, env) {
     for (let i = 0; i < expected.length; i++) {
       difference |= expected[i] ^ supplied[i];
     }
-    if (difference === 0) return identity;
+    if (difference === 0) {
+      if (identity.legacy &&
+          env.ADS_ALLOW_LEGACY_PUBLISHER_TOKEN !== "true") {
+        return null;
+      }
+      return identity;
+    }
   }
 
-  return null;
+  return await authenticatePublisher(request, env);
 }
 
 async function readInput(request) {
