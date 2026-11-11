@@ -1,5 +1,6 @@
 import { handleAdsOperations } from '../modules/ads/operations.mjs';
 import { handleAds } from '../modules/ads/api.mjs';
+import { handleAdsDelivery } from '../modules/ads/delivery.mjs';
 
 export default {
   async fetch(request, env) {
@@ -20,6 +21,14 @@ export default {
       }
     }
 
+    if (pathname.startsWith('/api/ads/delivery/')) {
+      try {
+        return await handleAdsDelivery(request, env);
+      } catch (error) {
+        console.error('Ads delivery failure', error);
+        return Response.json({ error: 'internal_error' }, { status: 500 });
+      }
+    }
     if (pathname.startsWith("/api/ads/")) {
       try {
         return await handleAds(request, env);
