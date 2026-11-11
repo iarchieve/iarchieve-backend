@@ -1,3 +1,4 @@
+import { handlePublisherAdmin } from '../modules/ads/publisher-admin.mjs';
 import { handleCredentialManagement } from '../modules/ads/credential-management.mjs';
 import { handleAdsCreatives } from '../modules/ads/creatives.mjs';
 import { handleAdsOperations } from '../modules/ads/operations.mjs';
@@ -7,6 +8,19 @@ import { handleAdsDelivery } from '../modules/ads/delivery.mjs';
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
+
+    if (pathname === "/api/ads/admin/publishers" ||
+        pathname.startsWith("/api/ads/admin/publishers/")) {
+      try {
+        return await handlePublisherAdmin(request, env);
+      } catch (error) {
+        console.error("Publisher admin failure", error);
+        return Response.json(
+          { error: "internal_error" },
+          { status: 500 }
+        );
+      }
+    }
 
     if (pathname === "/api/ads/publisher-credentials" ||
         pathname.startsWith("/api/ads/publisher-credentials/")) {
