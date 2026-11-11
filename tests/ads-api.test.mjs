@@ -19,9 +19,9 @@ test("health rejects unsupported methods", async () => {
   assert.equal(result.status, 405);
 });
 
-test("existing report endpoint rejects GET", async () => {
+test("removed report endpoint returns 404", async () => {
   const result = await response("/api/reports/draft");
-  assert.equal(result.status, 405);
+  assert.equal(result.status, 404);
 });
 
 test("advertising API rejects unauthenticated access", async () => {
