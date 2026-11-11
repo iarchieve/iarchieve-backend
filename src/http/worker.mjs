@@ -1,3 +1,4 @@
+import { handleAdsCreatives } from '../modules/ads/creatives.mjs';
 import { handleAdsOperations } from '../modules/ads/operations.mjs';
 import { handleAds } from '../modules/ads/api.mjs';
 import { handleAdsDelivery } from '../modules/ads/delivery.mjs';
@@ -21,6 +22,15 @@ export default {
       }
     }
 
+    if (pathname === "/api/ads/creatives" ||
+        pathname.startsWith("/api/ads/creatives/")) {
+      try {
+        return await handleAdsCreatives(request, env);
+      } catch (error) {
+        console.error("Ads creatives failure", error);
+        return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+    }
     if (pathname.startsWith('/api/ads/delivery/')) {
       try {
         return await handleAdsDelivery(request, env);
