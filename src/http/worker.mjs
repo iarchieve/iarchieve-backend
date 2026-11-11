@@ -1,3 +1,4 @@
+import { handleCredentialManagement } from '../modules/ads/credential-management.mjs';
 import { handleAdsCreatives } from '../modules/ads/creatives.mjs';
 import { handleAdsOperations } from '../modules/ads/operations.mjs';
 import { handleAds } from '../modules/ads/api.mjs';
@@ -6,6 +7,16 @@ import { handleAdsDelivery } from '../modules/ads/delivery.mjs';
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
+
+    if (pathname === "/api/ads/publisher-credentials" ||
+        pathname.startsWith("/api/ads/publisher-credentials/")) {
+      try {
+        return await handleCredentialManagement(request, env);
+      } catch (error) {
+        console.error("Credential management failure", error);
+        return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+    }
 
     if (
       pathname === "/api/ads/audit" ||
