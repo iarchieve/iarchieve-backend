@@ -193,13 +193,11 @@ export async function handleAdsOperations(request, env) {
     id
   );
 
-  const result = await update.run();
+  const results = await env.ADS_DB.batch([update, audit]);
 
-  if (result.meta?.changes !== 1) {
+  if (results[0]?.meta?.changes !== 1) {
     return json({ error: "concurrent_update" }, 409);
   }
-
-  await audit.run();
 
   return json({
     id,
