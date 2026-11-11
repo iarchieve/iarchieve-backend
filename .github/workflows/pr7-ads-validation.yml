@@ -1,0 +1,74 @@
+name: PR7 Ads Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "migrations/**"
+      - "wrangler.jsonc"
+      - ".github/workflows/pr7-ads-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ads-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Node tests
+        run: node --test tests/*.test.mjs
+
+      - name: Worker build
+        run: |
+          npx --yes wrangler@4.160.0 deploy \
+            --dry-run \
+            --outdir /tmp/iarchieve-worker-build
+
+      - name: Prepare isolated local D1
+        run: |
+          cat > /tmp/pr7-wrangler.json <<'EOF'
+          {
+            "name": "pr7-ads-validation",
+            "main": "src/http/worker.mjs",
+            "compatibility_date": "2026-11-08",
+            "d1_databases": [{
+              "binding": "ADS_DB",
+              "database_name": "ads-pr7-ci",
+              "database_id": "e9c91d42-792d-4fe8-8f30-2a1f2c8dd107"
+            }]
+          }
+          EOF
+
+          mkdir -p /tmp/pr7-d1-state
+
+          for file in $(find migrations -maxdepth 1 \
+            -name '*.sql' | sort); do
+            echo "Applying $file"
+
+            npx --yes wrangler@4.160.0 d1 execute ads-pr7-ci \
+              --local \
+              --config /tmp/pr7-wrangler.json \
+              --persist-to /tmp/pr7-d1-state \
+              --file "$file"
+          done
+
+      - name: Verify D1 schema
+        run: |
+          npx --yes wrangler@4.160.0 d1 execute ads-pr7-ci \
+            --local \
+            --config /tmp/pr7-wrangler.json \
+            --persist-to /tmp/pr7-d1-state \
+            --command "SELECT name FROM sqlite_master WHERE type='table' AND name='ads_creatives';"

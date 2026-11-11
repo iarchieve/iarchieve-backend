@@ -118,7 +118,7 @@ export async function handleAds(request, env) {
   } else {
     if (
       !Number.isSafeInteger(data.floor_cpm_krw) ||
-      data.floor_cpm_krw < 0
+      data.floor_cpm_krw < 0 || (data.format !== undefined && !["display", "video", "native"].includes(data.format))
     ) return respond({ error: "invalid_placement" }, 422);
   }
 
@@ -135,8 +135,8 @@ export async function handleAds(request, env) {
         "INSERT INTO ads_campaigns (id,advertiser_id,name,format,daily_budget_krw) VALUES (?,?,?,?,?)"
       ).bind(id, ownerId, data.name.trim(), data.format, data.daily_budget_krw)
     : env.ADS_DB.prepare(
-        "INSERT INTO ads_placements (id,publisher_id,name,floor_cpm_krw) VALUES (?,?,?,?)"
-      ).bind(id, ownerId, data.name.trim(), data.floor_cpm_krw);
+        "INSERT INTO ads_placements (id,publisher_id,name,floor_cpm_krw,format) VALUES (?,?,?,?,?)"
+      ).bind(id, ownerId, data.name.trim(), data.floor_cpm_krw, data.format ?? "display");
 
   const audit = env.ADS_DB.prepare(
     "INSERT INTO ads_audit_log (id,actor_id,action,target_type,target_id) VALUES (?,?,?,?,?)"
