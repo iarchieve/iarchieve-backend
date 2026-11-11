@@ -1,8 +1,10 @@
+import { authenticatePublisher } from './publisher-auth.mjs';
 const reply = (data, status = 200) => Response.json(data, {
   status, headers: { 'Cache-Control': 'no-store' }
 });
 
-function authorized(request, env) {
+function legacyActor(request, env) {
+  if (env.ADS_ALLOW_LEGACY_PUBLISHER_TOKEN !== 'true') return null;
   const header = /^Bearer ([a-fA-F0-9]{64})$/.exec(request.headers.get('Authorization') || '');
   const secret = env.ADS_PUBLISHER_TOKEN;
   if (!header || typeof secret !== 'string' || !/^[a-fA-F0-9]{64}$/.test(secret)) return false;
@@ -10,11 +12,12 @@ function authorized(request, env) {
   const a = header[1].toUpperCase();
   const b = secret.toUpperCase();
   for (let i = 0; i < 64; i++) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return difference === 0;
+  return difference === 0 ? { role: 'publisher', id: 'pub-test-001' } : null;
 }
 
 export async function handleAdsDelivery(request, env) {
-  if (!authorized(request, env)) return reply({ error: 'unauthorized' }, 401);
+  const actor = legacyActor(request, env) || await authenticatePublisher(request, env);
+  if (!actor) return reply({ error: 'unauthorized' }, 401);
   if (!env.ADS_DB) return reply({ error: 'database_unavailable' }, 503);
   const path = new URL(request.url).pathname;
   if (path !== '/api/ads/delivery/next' || request.method !== 'GET') {
@@ -23,9 +26,17 @@ export async function handleAdsDelivery(request, env) {
   const placementId = new URL(request.url).searchParams.get('placement_id');
   if (!placementId || placementId.length > 128) return reply({ error: 'invalid_placement_id' }, 422);
   const placement = await env.ADS_DB.prepare(
-    "SELECT id, publisher_id, status, format FROM ads_placements WHERE id=?"
-  ).bind(placementId).first();
-  if (!placement || placement.publisher_id !== 'pub-test-001') return reply({ error: 'not_found' }, 404);
+    `SELECT id, publisher_id, status, format
+     FROM ads_placements
+     WHERE id=? AND publisher_id=?
+       AND EXISTS (
+         SELECT 1 FROM ads_accounts
+         WHERE ads_accounts.id=ads_placements.publisher_id
+           AND ads_accounts.role='publisher'
+           AND ads_accounts.status='active'
+       )`
+  ).bind(placementId, actor.id).first();
+  if (!placement || placement.publisher_id !== actor.id) return reply({ error: 'not_found' }, 404);
   if (placement.status !== 'approved') return reply({ error: 'placement_not_approved' }, 409);
   const campaign = await env.ADS_DB.prepare(
     `SELECT a.id, a.name, a.format,
