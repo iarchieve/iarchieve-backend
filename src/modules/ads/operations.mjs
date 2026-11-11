@@ -184,7 +184,8 @@ export async function handleAdsOperations(request, env) {
   ).bind(data.status, id, record.status);
 
   const audit = env.ADS_DB.prepare(
-    "INSERT INTO ads_audit_log (id,actor_id,action,target_type,target_id) VALUES (?,?,?,?,?)"
+    "INSERT INTO ads_audit_log (id,actor_id,action,target_type,target_id) " +
+    "SELECT ?,?,?,?,? WHERE changes()=1"
   ).bind(
     crypto.randomUUID(),
     actor.id,
