@@ -89,6 +89,9 @@ test("admin can atomically rotate an active credential", async () => {
   assert.ok(insert);
   assert.match(update.sql, /status='revoked'/);
   assert.match(update.sql, /WHERE id=\? AND status='active'/);
+  assert.match(update.sql, /ads_accounts\.role='publisher'/);
+  assert.match(update.sql, /ads_accounts\.status='active'/);
+  assert.match(update.sql, /ads_accounts\.id=ads_publisher_credentials\.publisher_id/);
   assert.match(insert.sql, /WHERE changes\(\)=1/);
 
   const hash = insert.params[2];

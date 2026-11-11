@@ -167,7 +167,11 @@ export async function handleCredentialManagement(request, env) {
     const retireOld = env.ADS_DB.prepare(
       "UPDATE ads_publisher_credentials " +
       "SET status='revoked',revoked_at=CURRENT_TIMESTAMP " +
-      "WHERE id=? AND status='active'"
+      "WHERE id=? AND status='active' " +
+      "AND EXISTS (SELECT 1 FROM ads_accounts " +
+      "WHERE ads_accounts.id=ads_publisher_credentials.publisher_id " +
+      "AND ads_accounts.role='publisher' " +
+      "AND ads_accounts.status='active')"
     ).bind(credentialId);
 
     const insertNew = env.ADS_DB.prepare(
