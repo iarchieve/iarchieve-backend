@@ -1,3 +1,4 @@
+import { handleAdsOperations } from '../modules/ads/operations.mjs';
 import { handleAds } from '../modules/ads/api.mjs';
 import { buildReportDraft } from '../modules/reports/build-draft.mjs';
 
@@ -29,6 +30,20 @@ async function readReportInput(request) {
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
+    if (
+      pathname === "/api/ads/audit" ||
+      /^\/api\/ads\/(campaigns|placements)\/[^/]+$/.test(pathname)
+    ) {
+      try {
+        return await handleAdsOperations(request, env);
+      } catch (error) {
+        console.error("Ads operations failure", error);
+        return Response.json(
+          { error: "internal_error" },
+          { status: 500 }
+        );
+      }
+    }
     if (pathname.startsWith('/api/ads/')) {
       try {
         return await handleAds(request, env);
