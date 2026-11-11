@@ -1,3 +1,4 @@
+import { handleAds } from '../modules/ads/api.mjs';
 import { buildReportDraft } from '../modules/reports/build-draft.mjs';
 
 const maxBodyBytes = 1024 * 1024;
@@ -26,8 +27,19 @@ async function readReportInput(request) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const { pathname } = new URL(request.url);
+    if (pathname.startsWith('/api/ads/')) {
+      try {
+        return await handleAds(request, env);
+      } catch (error) {
+        console.error('Ads API failure', error);
+        return Response.json(
+          { error: 'internal_error' },
+          { status: 500 }
+        );
+      }
+    }
     if (pathname === '/health') {
       if (request.method !== 'GET') {
         return new Response(null, { status: 405, headers: { Allow: 'GET' } });
