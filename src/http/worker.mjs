@@ -6,6 +6,8 @@ import { handleAds } from '../modules/ads/api.mjs';
 import { handleAdsDelivery } from '../modules/ads/delivery.mjs';
 import { handleAdsDeliveryIssue } from '../modules/ads/delivery-issue.mjs';
 import { handleImpressionClaim } from '../modules/ads/impression-claim.mjs';
+import { handleVerificationAssessment } from '../modules/ads/verification-assess.mjs';
+import { handleLoveAssessment } from '../modules/ads/love-assess.mjs';
 
 export default {
   async fetch(request, env) {
@@ -57,6 +59,29 @@ export default {
         console.error("Ads creatives failure", error);
         return Response.json({ error: "internal_error" }, { status: 500 });
       }
+    }
+    if (pathname === "/api/ads/verifications/love-assess") {
+      try {
+        return await handleLoveAssessment(request, env);
+      } catch (error) {
+        console.error("LOVE assessment failure", error);
+        return Response.json(
+          { error: "internal_error" },
+          { status: 500 }
+        );
+      }
+    }
+    if (pathname === "/api/ads/verifications/assess") {
+      return Response.json(
+        {
+          error: "legacy_verification_disabled",
+          replacement: "/api/ads/verifications/love-assess"
+        },
+        {
+          status: 410,
+          headers: { "Cache-Control": "no-store" }
+        }
+      );
     }
     if (pathname === "/api/ads/impressions/claim") {
       try {
