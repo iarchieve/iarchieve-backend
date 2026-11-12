@@ -12,6 +12,7 @@ import { handleLoveSessionIssue } from '../modules/ads/love-session-issue.mjs';
 import { handleLoveLifecycle } from '../modules/ads/love-lifecycle.mjs';
 import { handleVerifierAdmin } from '../modules/ads/verifier-admin.mjs';
 import { handleVerifierIndependence } from '../modules/ads/verifier-independence.mjs';
+import { handleTasBridge } from '../modules/ads/tas-bridge.mjs';
 
 export default {
   async fetch(request, env) {
@@ -77,6 +78,14 @@ export default {
       catch (error) {
         console.error("Verifier administration failure", error);
         return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+    }
+    if (pathname === '/api/ads/admin/tas-requests' ||
+        /^\/api\/ads\/admin\/tas-requests\/[^/]+$/.test(pathname)) {
+      try { return await handleTasBridge(request, env); }
+      catch (error) {
+        console.error('TAS bridge failure', error);
+        return Response.json({ error: 'internal_error' }, { status: 500 });
       }
     }
     if (pathname === "/api/ads/admin/love-sessions") {
