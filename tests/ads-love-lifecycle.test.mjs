@@ -12,7 +12,7 @@ const claim = '123e4567-e89b-42d3-a456-426614174000';
 const rid = '223e4567-e89b-42d3-a456-426614174000';
 const verifier = 'verifier-lifecycle';
 const nonce = 'c'.repeat(32);
-const expiry = new Date(Date.now() + 240000).toISOString().replace('T', ' ').slice(0, 19);
+const expiry = new Date(Date.now() + 600000).toISOString().replace('T', ' ').slice(0, 19);
 const root = 'https://example.test/api/ads/admin/love-reservations';
 
 function mock({ changes = 1, row = { id: rid, claim_id: claim, verifier_id: verifier, session_nonce: nonce, expires_at: expiry } } = {}) {
@@ -100,7 +100,8 @@ test('forged client supplied digest is rejected as an unknown field', async () =
 });
 test('expiry after reservation expiry rejected', async () => {
   const x = mock();
-  const envelope = await proofFixture({ expires_at: new Date(Date.parse(expiry + 'Z') + 3000).toISOString() });
+  const envelope = await proofFixture();
+  envelope.expires_at = new Date(Date.parse(expiry + 'Z') + 3000).toISOString();
   assert.equal((await x.post(`${root}/${rid}/finalize`, { envelope })).status, 403);
 });
 test('already expired or absent reservation rejected', async () => {
