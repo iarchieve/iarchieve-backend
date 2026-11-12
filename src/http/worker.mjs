@@ -8,6 +8,7 @@ import { handleAdsDeliveryIssue } from '../modules/ads/delivery-issue.mjs';
 import { handleImpressionClaim } from '../modules/ads/impression-claim.mjs';
 import { handleVerificationAssessment } from '../modules/ads/verification-assess.mjs';
 import { handleLoveAssessment } from '../modules/ads/love-assess.mjs';
+import { handleLoveSessionIssue } from '../modules/ads/love-session-issue.mjs';
 
 export default {
   async fetch(request, env) {
@@ -58,6 +59,17 @@ export default {
       } catch (error) {
         console.error("Ads creatives failure", error);
         return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+    }
+    if (pathname === "/api/ads/admin/love-sessions") {
+      try {
+        return await handleLoveSessionIssue(request, env);
+      } catch (error) {
+        console.error("LOVE session issue failure", error);
+        return Response.json(
+          { error: "internal_error" },
+          { status: 500 }
+        );
       }
     }
     if (pathname === "/api/ads/verifications/love-assess") {
