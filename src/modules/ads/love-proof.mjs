@@ -70,7 +70,7 @@ export async function createProtectedProof(input, keyBytes) {
     claim_id: input.claim_id,
     verifier_id: input.verifier_id,
     evidence_digest: input.evidence_digest,
-    session_nonce: Array.from(
+    session_nonce: input.session_nonce ?? Array.from(
       crypto.getRandomValues(new Uint8Array(16)),
       byte => byte.toString(16).padStart(2, "0")
     ).join(""),
