@@ -9,6 +9,7 @@ import { handleImpressionClaim } from '../modules/ads/impression-claim.mjs';
 import { handleVerificationAssessment } from '../modules/ads/verification-assess.mjs';
 import { handleLoveAssessment } from '../modules/ads/love-assess.mjs';
 import { handleLoveSessionIssue } from '../modules/ads/love-session-issue.mjs';
+import { handleLoveLifecycle } from '../modules/ads/love-lifecycle.mjs';
 
 export default {
   async fetch(request, env) {
@@ -62,14 +63,16 @@ export default {
       }
     }
     if (pathname === "/api/ads/admin/love-sessions") {
-      try {
-        return await handleLoveSessionIssue(request, env);
-      } catch (error) {
-        console.error("LOVE session issue failure", error);
-        return Response.json(
-          { error: "internal_error" },
-          { status: 500 }
-        );
+      return Response.json({ error: "direct_issuance_disabled",
+        replacement: "/api/ads/admin/love-reservations" },
+        { status: 410, headers: { "Cache-Control": "no-store" } });
+    }
+    if (pathname === "/api/ads/admin/love-reservations" ||
+        /^\/api\/ads\/admin\/love-reservations\/[^/]+\/finalize$/.test(pathname)) {
+      try { return await handleLoveLifecycle(request, env); }
+      catch (error) {
+        console.error("LOVE lifecycle failure", error);
+        return Response.json({ error: "internal_error" }, { status: 500 });
       }
     }
     if (pathname === "/api/ads/verifications/love-assess") {
