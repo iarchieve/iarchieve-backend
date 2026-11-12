@@ -4,6 +4,8 @@ import { handleAdsCreatives } from '../modules/ads/creatives.mjs';
 import { handleAdsOperations } from '../modules/ads/operations.mjs';
 import { handleAds } from '../modules/ads/api.mjs';
 import { handleAdsDelivery } from '../modules/ads/delivery.mjs';
+import { handleAdsDeliveryIssue } from '../modules/ads/delivery-issue.mjs';
+import { handleImpressionClaim } from '../modules/ads/impression-claim.mjs';
 
 export default {
   async fetch(request, env) {
@@ -54,6 +56,28 @@ export default {
       } catch (error) {
         console.error("Ads creatives failure", error);
         return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+    }
+    if (pathname === "/api/ads/impressions/claim") {
+      try {
+        return await handleImpressionClaim(request, env);
+      } catch (error) {
+        console.error("Impression claim failure", error);
+        return Response.json(
+          { error: "internal_error" },
+          { status: 500 }
+        );
+      }
+    }
+    if (pathname === "/api/ads/delivery/issue") {
+      try {
+        return await handleAdsDeliveryIssue(request, env);
+      } catch (error) {
+        console.error("Delivery issuance failure", error);
+        return Response.json(
+          { error: "internal_error" },
+          { status: 500 }
+        );
       }
     }
     if (pathname.startsWith('/api/ads/delivery/')) {
