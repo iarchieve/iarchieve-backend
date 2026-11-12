@@ -11,6 +11,7 @@ import { handleLoveAssessment } from '../modules/ads/love-assess.mjs';
 import { handleLoveSessionIssue } from '../modules/ads/love-session-issue.mjs';
 import { handleLoveLifecycle } from '../modules/ads/love-lifecycle.mjs';
 import { handleVerifierAdmin } from '../modules/ads/verifier-admin.mjs';
+import { handleVerifierIndependence } from '../modules/ads/verifier-independence.mjs';
 
 export default {
   async fetch(request, env) {
@@ -61,6 +62,13 @@ export default {
       } catch (error) {
         console.error("Ads creatives failure", error);
         return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+    }
+    if (pathname.startsWith('/api/ads/admin/verifier-independence/')) {
+      try { return await handleVerifierIndependence(request, env); }
+      catch (error) {
+        console.error('Verifier independence failure', error);
+        return Response.json({ error: 'internal_error' }, { status: 500 });
       }
     }
     if (pathname === "/api/ads/admin/verifiers" ||
